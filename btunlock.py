@@ -5,7 +5,6 @@ import subprocess
 import time
 import socket
 import threading
-#import threading
 # This script needs that /usr/bin/l2ping and /bin/hciconfig be added to sudoers for current user
 from os.path import basename
 from gi.repository import Gtk, Gio, GObject, Gdk
@@ -79,6 +78,8 @@ def cbk_state(widget):
     global LOCKEDON_FILE
     global LOCKEDOFF_FILE
     global BaseDir
+    global IconDir
+    global win
     if widget.get_active():
         #os.system("rm -f " + BaseDir + "/disable")
         try:
@@ -90,11 +91,13 @@ def cbk_state(widget):
         except:
             print ""
         notif_msg("Enabling daemon...")
+        win.set_icon_from_file(IconDir+"/btunlock.png")
         os.system("bash "+BaseDir+"/btunlock_daemon.sh &")
     else:
         os.system("touch " + DISABLEFILE)
         time.sleep(2)
         killdaemon()
+        win.set_icon_from_file(IconDir+"/btunlockdis.png")
         try:
             os.remove(LOCKFILE)
             os.remove(LOCKEDON_FILE)
@@ -124,9 +127,13 @@ def chkdisabledaemon():
             DisFlag = True
             status_item.set_active( False )
             os.system("bash "+ BaseDir + "/btdisconn.sh " + device)
-            ind.set_icon(IconDir+"/btunlock.svg")
+            ind.set_icon(IconDir+"/btunlockdis.png")
         if not os.path.isfile(DISABLEFILE) and DisFlag:
             DisFlag = False
+            if os.path.isfile(LOCKEDOFF_FILE):
+                ind.set_icon(IconDir+"/btunlock.png")
+            if os.path.isfile(LOCKEDON_FILE:
+                ind.set_icon(IconDir+"/btlock.png")
         if os.path.isfile(LOCKEDON_FILE) and not LockFlag:
             ind.set_icon(IconDir+"/btlock.png")
             LockFlag = True
@@ -155,7 +162,10 @@ device = subprocess.check_output("grep device " + CONFIGFILE + " | sed -e 's/dev
 device = device.rstrip('\n')
 
 win=Gtk.Window()
-win.set_icon_from_file(IconDir+"/btunlock.png")
+if os.path.exists(DISABLEFILE):
+    win.set_icon_from_file(IconDir+"/btunlockdis.png")
+else:
+    win.set_icon_from_file(IconDir+"/btunlock.png")
 win.set_default_size(80, 80)
 win.set_border_width(1)
 win.set_decorated(False)
