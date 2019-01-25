@@ -132,7 +132,7 @@ def chkdisabledaemon():
             DisFlag = False
             if os.path.isfile(LOCKEDOFF_FILE):
                 ind.set_icon(IconDir+"/btunlock.png")
-            if os.path.isfile(LOCKEDON_FILE:
+            if os.path.isfile(LOCKEDON_FILE):
                 ind.set_icon(IconDir+"/btlock.png")
         if os.path.isfile(LOCKEDON_FILE) and not LockFlag:
             ind.set_icon(IconDir+"/btlock.png")
