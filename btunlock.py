@@ -85,11 +85,12 @@ def cbk_state(widget):
         try:
             os.remove(DISABLEFILE)
         except:
-            print ""
+            pass
         try:
             os.remove(BaseDir + "/locked")
         except:
-            print ""
+            pass
+        os.system("touch " + LOCKEDOFF_FILE)
         notif_msg("Enabling daemon...")
         win.set_icon_from_file(IconDir+"/btunlock.png")
         os.system("bash "+BaseDir+"/btunlock_daemon.sh &")
@@ -98,13 +99,20 @@ def cbk_state(widget):
         time.sleep(2)
         killdaemon()
         win.set_icon_from_file(IconDir+"/btunlockdis.png")
+        os.system("bash "+ BaseDir + "/btdisconn.sh " + device)
         try:
-            os.remove(LOCKFILE)
-            os.remove(LOCKEDON_FILE)
-            os.remove(LOCKEDOFF_FILE)
-            os.system("bash "+ BaseDir + "/btdisconn.sh " + device)
+            os.remove(LOCKFILE)            
         except:
-            print ""
+            pass
+        try:
+            os.remove(LOCKEDON_FILE)
+        except:
+            pass
+        try:
+            os.remove(LOCKEDOFF_FILE)
+        except:
+            pass
+
         notif_msg("Disabling daemon...1")       
 
 # -------------------------------------
@@ -129,10 +137,14 @@ def chkdisabledaemon():
             os.system("bash "+ BaseDir + "/btdisconn.sh " + device)
             ind.set_icon(IconDir+"/btunlockdis.png")
         if not os.path.isfile(DISABLEFILE) and DisFlag:
-            DisFlag = False
+            
+            print "No disable file"
             if os.path.isfile(LOCKEDOFF_FILE):
+                DisFlag = False
                 ind.set_icon(IconDir+"/btunlock.png")
+                print "Setting2 icon to enable"
             if os.path.isfile(LOCKEDON_FILE):
+                DisFlag = False
                 ind.set_icon(IconDir+"/btlock.png")
         if os.path.isfile(LOCKEDON_FILE) and not LockFlag:
             ind.set_icon(IconDir+"/btlock.png")
