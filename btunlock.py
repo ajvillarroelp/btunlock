@@ -166,7 +166,12 @@ def get_lock(process_name):
         sys.exit()
 
 # -------------------- Main ---------------------
-
+if (len(sys.argv) > 1):
+    if (sys.argv[1] == "-f"):
+        try:
+            os.remove(LOCKFILE)
+        except:
+            pass
 
 #get_lock('btunlock')
 

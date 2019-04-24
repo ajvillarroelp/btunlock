@@ -4,9 +4,21 @@ Version=1.0
 GenericName=Bluetooth Unlock 
 Name=BTUnlock 
 Comment=BTUnlock 
-Exec=python /home/antonio/btunlock/btunlock.py
+Exec=bash /home/antonio/btunlock/btunlock_daemon.sh -f
 Icon=btunlock
 Terminal=false
 Categories=Network;System;
 StartupNotify=false
+X-Ayatana-Desktop-Shortcuts=EnableMon;DisableMon;
 
+[EnableMon Shortcut Group]
+Name=Enable monitor
+Exec=rm -f /home/antonio/.btunlock/disable
+Terminal=false
+TargetEnvironment=Unity
+
+[DisableMon Shortcut Group]
+Name=Disable monitor
+Exec=touch /home/antonio/.btunlock/disable
+Terminal=false
+TargetEnvironment=Unity

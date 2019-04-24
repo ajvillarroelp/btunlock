@@ -16,6 +16,12 @@ NOTIF_CMD=
 HCITOOL=/usr/bin/hcitool
 LOGFILE=~/.btunlock/btunlock.log
 
+releaselock(){
+rm -f $LOCKFILE # after you're donecp
+}
+
+trap releaselock EXIT SIGINT SIGTERM
+
 rm -f $LOCKEDON_FILE
 rm -f $LOCKEDOFF_FILE
 
@@ -32,9 +38,22 @@ if [[ -z $THRESHOLD ]];then
 THRESHOLD=-4
 fi
 
+uptime_value=$(uptime -p | cut -d' ' -f 2)
+uptime_measure=$(uptime -p | cut -d' ' -f 3)
+if [ $uptime_value -lt 5 -a $uptime_measure == "minutes" ];then
+rm -f $LOCKFILE
+fi
+
+if [ $1 == "-f" ];then
+rm -f $LOCKFILE
+fi
+
 #Locking mechanism
 tempfile=$(mktemp /tmp/btlock.XXXX)
 if ! ln $tempfile $LOCKFILE ; then
+    trap - EXIT
+    trap - SIGINT
+    trap - SIGTERM    
     echo "Daemon already running. Quitting..."
     notify-send  BTUnlock "Daemon already running!"
     exit 5
@@ -100,10 +119,10 @@ function check_connection {
 }
 
 msg "========= Starting daemon... =============================================="
-if [ -f $DISABLE_FILE ];then
-    msg "Disable file found. Exiting..."
-    exit 3
-fi
+# if [ -f $DISABLE_FILE ];then
+#     msg "Disable file found. Exiting..."
+#     exit 3
+# fi
 if [ "`hciconfig | grep -c DOWN 2> /dev/null`" -eq 1 ]; then
     msg "Bluetooth is down. Activating it..."
     sudo hciconfig hci0 up
@@ -117,6 +136,8 @@ shut_cont=$(echo "$shut_cont + 1" | bc)
     if [ $shut_cont -gt 5 ];then 
         touch $DISABLE_FILE
         sudo hciconfig hci0 down
+        notify-send  BTUnlock "Device not found in 5 attemps. Quitting!"
+        rm -f $LOCKFILE
         exit 0
     fi
     sleep 300    
@@ -128,13 +149,19 @@ msg "Monitoring proximity of \"$name\" [$DEVICE]";
 touch $LOCKEDOFF_FILE
 rm -f $LOCKEDON_FILE
 
+if [ -f $DISABLE_FILE ];then
+    msg "Disable file found. Disconnecting..."
+    bash ~/.btunlock/btdisconn.sh $DEVICE
+fi
 state="near"
 while /bin/true; do
 
     if [ -f $DISABLE_FILE ];then
-        msg "Disable file found. Exiting..."
-        bash ~/.btunlock/btdisconn.sh $DEVICE
-        exit 3
+        #msg "Disable file found. Exiting..."
+        #rm -f $LOCKFILE
+        #exit 3
+        sleep 5
+        continue
     fi
 
     check_connection
